@@ -1,38 +1,53 @@
 import requests
 import os
 
-file_path = 'input.txt'
-if not os.path.exists(file_path):
-    print("A descarregar o dataset TinyShakespeare...")
-    data_url = 'https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt'
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(requests.get(data_url).text)
+class CharTokenizer:
+    def __init__(self, file_path, data_url=None):
+        self.file_path = file_path
+        self.data_url = data_url
+        self.stoi = None
+        self.itos = None
+        self.vocab_size = 0
+        self.data = None
 
-with open(file_path, 'r', encoding='utf-8') as f:
-    text = f.read()
+    def load(self):
+        if not os.path.exists(self.file_path):
+            # Cria a pasta data/ se não existir
+            os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
+            
+            response = requests.get(self.data_url)
+            response.raise_for_status()
+            
+            with open(self.file_path, 'w', encoding='utf-8') as f:
+                f.write(response.text)
+            
+        with open(self.file_path, 'r', encoding='utf-8') as f:
+            self.data = f.read()
+            
+        self._build_vocab()
 
-print(f"Tamanho do dataset: {len(text)} caracteres")
+    def _build_vocab(self):
+        chars = sorted(list(set(self.data)))
+        self.vocab_size = len(chars)
+        
+        self.stoi = {ch:i for i,ch in enumerate(chars)}
+        self.itos = {i:ch for i,ch in enumerate(chars)}
 
-chars = sorted(list(set(text)))
-vocab_size = len(chars)
+    def encode(self, text):
+        return [self.stoi[c] for c in text]
 
-print(f"Vocabulário único: {''.join(chars)}")
-print(f"Tamanho do vocabulário: {vocab_size}")
+    def decode(self, indices):
+        return ''.join([self.itos[i] for i in indices])
 
-stoi = {ch:i for i,ch in enumerate(chars)}
-itos = {i:ch for i,ch in enumerate(chars)}
+if __name__ == "__main__":
+    tokenizer = CharTokenizer(file_path='data/input.txt', data_url='https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt')
+    tokenizer.load()
+    
+    print(f"Vocabulary: {tokenizer.vocab_size} unique chars")
 
-encode = lambda s: [stoi[c] for c in s]
-decode = lambda l: ''.join([itos[i] for i in l])
-
-print("\n--- Teste de Sanidade ---")
-frase_teste = "golden sun"
-encoded = encode(frase_teste)
-decoded = decode(encoded)
-
-print(f"Original: {frase_teste}")
-print(f"Encoded:  {encoded}")
-print(f"Decoded:  {decoded}")
-
-assert frase_teste == decoded, "Erro Crítico: O descodificador não recuperou o texto original!"
-print("Teste Passou: Pipeline de dados sólido.")
+    encoded = tokenizer.encode("golden sun")
+    decoded = tokenizer.decode(encoded)
+    
+    print(f"Original: golden sun")
+    print(f"Encoded:  {encoded}")
+    print(f"Decoded:  {decoded}")
