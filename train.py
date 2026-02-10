@@ -58,4 +58,8 @@ print(f"\n--- Finished Training ---")
 print(f"Final Loss: {loss.item():.4f}")
 
 print("\nGenerating text (with Bigram model)...")
-idx = torch.zeros((1, 1), dtype=torch.long, device=device)
+context = torch.zeros((1, 1), dtype=torch.long, device=device)
+
+generated_ids = m.generate(context, max_new_tokens=500)
+
+print(tokenizer.decode(generated_ids[0].tolist()))
