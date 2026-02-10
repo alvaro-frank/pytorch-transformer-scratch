@@ -6,7 +6,7 @@ batch_size = 32
 block_size = 8
 max_iters = 3000
 learning_rate = 1e-2
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
 eval_interval = 300
 
 tokenizer = CharTokenizer(file_path='data/input.txt', data_url='https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt')
@@ -54,8 +54,8 @@ for iter in range(max_iters):
     loss.backward()                       
     optimizer.step()                      
 
-print(f"\n--- Treino Concluído ---")
-print(f"Loss Final: {loss.item():.4f}")
+print(f"\n--- Finished Training ---")
+print(f"Final Loss: {loss.item():.4f}")
 
-print("\nGerando texto (com modelo Bigram)...")
+print("\nGenerating text (with Bigram model)...")
 idx = torch.zeros((1, 1), dtype=torch.long, device=device)
