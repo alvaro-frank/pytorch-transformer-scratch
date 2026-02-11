@@ -12,7 +12,6 @@ class CharTokenizer:
 
     def load(self):
         if not os.path.exists(self.file_path):
-            # Cria a pasta data/ se não existir
             os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
             
             response = requests.get(self.data_url)
